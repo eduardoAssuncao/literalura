@@ -1,26 +1,40 @@
 package com.literalura.model;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 @Data
-@NoArgsConstructor
-@AllArgsConstructor
 @Entity
 @Table(name = "authors")
+@NoArgsConstructor
 public class Author {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     private String name;
-    private Integer birthYear;
-    private Integer deathYear;
+    private Integer anoNascimento;
+    private Integer anoFalecimento;
 
-    @ManyToMany(mappedBy = "authors")
-    private List<Book> books;
+    @ManyToMany(mappedBy = "authors", fetch = FetchType.EAGER)
+    private Set<Book> books = new HashSet<>();
+
+    public Author(String name, Integer anoNascimento, Integer anoFalecimento) {
+        this.name = name;
+        this.anoNascimento = anoNascimento;
+        this.anoFalecimento = anoFalecimento;
+    }
+
+    @Override
+    public String toString() {
+        return "Author{" +
+                "name='" + name + '\'' +
+                ", anoNascimento=" + anoNascimento +
+                ", anoFalecimento=" + anoFalecimento +
+                '}';
+    }
 }

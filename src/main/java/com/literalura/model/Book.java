@@ -5,11 +5,10 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Data
-@NoArgsConstructor
-@AllArgsConstructor
 @Entity
 @Table(name = "books")
 public class Book {
@@ -17,19 +16,54 @@ public class Book {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(unique = true)
-    private Integer gutenbergId;
-
     private String title;
 
-    @ElementCollection
-    private List<String> subjects;
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "book_languages")
+    private Set<String> idiomas = new HashSet<>();
 
-    @ElementCollection
-    private List<String> languages;
+    private String numeroDownloads;
 
-    private String downloadCount;
+    @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    private Set<Author> authors = new HashSet<>();
 
-    @ManyToMany(cascade = CascadeType.ALL)
-    private List<Author> authors;
+    public Book(){}
+
+    public Book(DadosBook dadosBook){
+        this.title = dadosBook.title();
+        this.idiomas = dadosBook.languages() != null ? new HashSet<>(dadosBook.languages()) : new HashSet<>();
+        this.numeroDownloads = dadosBook.numeroDownloads();
+        this.authors = dadosBook.authors() != null ? 
+            dadosBook.authors().stream()
+                .map(authorData -> new Author(
+                    authorData.name(),
+                    authorData.anoNascimento(),
+                    authorData.anoFalecimento()))
+                .collect(Collectors.toSet())
+            : new HashSet<>();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Book book = (Book) o;
+        return Objects.equals(id, book.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(id);
+    }
+
+    @Override
+    public String toString() {
+        return "Book{" +
+                "id=" + id +
+                ", title='" + title + '\'' +
+                ", idiomas=" + idiomas +
+                ", numeroDownloads='" + numeroDownloads + '\'' +
+                ", authors=" + authors +
+                '}';
+    }
 }
